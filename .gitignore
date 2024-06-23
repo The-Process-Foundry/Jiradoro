@@ -15,10 +15,10 @@ target/
 /node_modules
 
 # Packaging for the WebAssembly project
-dist/
+/frontend/dist/
 
 # Compiled tailwind css. Should be built locally
-frontend/output.css
+/frontend/output.css
 
 
 
