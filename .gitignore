@@ -1,0 +1,30 @@
+# Documentation - ignore the better title
+"docs/Jiradoro/"
+
+# Personal configuration of Obsidian (used to create docs)
+.obsidian
+
+# Files that can be used locally but should not be saved into git
+# For example, raw Fishhead Labs data
+local/
+
+# Rust build outputs
+target/
+
+# Javascript modules installed by the client
+/node_modules
+
+# Packaging for the WebAssembly project
+dist/
+
+# Compiled tailwind css. Should be built locally
+frontend/output.css
+
+
+
+# IDE Code
+/*.iml
+/.idea
+
+# Binaries that are downloaded/compiled locally
+/bin
