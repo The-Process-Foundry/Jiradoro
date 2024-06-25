@@ -1,3 +1,7 @@
+use js_sys::Promise;
+use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
+
 mod app;
 pub mod components;
 
@@ -35,6 +39,30 @@ mod logger {
       .with(perf_layer)
       .init();
   }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Request {
+  message: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Response {
+  message: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Emission {
+  payload: Response,
+}
+
+// Defines an async Rust function to call Tauri, used for updating the system tray state.
+#[wasm_bindgen]
+extern "C" {
+  #[wasm_bindgen(js_namespace = ["window.__TAURI__.tauri"])]
+  async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+  #[wasm_bindgen(js_namespace = ["window.__TAURI__.event"], js_name = "listen")]
+  fn listen_(event: &str, handler: &Closure<dyn FnMut(JsValue)>) -> Promise;
 }
 
 fn main() {

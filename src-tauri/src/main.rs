@@ -2,8 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::Manager;
-use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu};
-
+use tauri::{SystemTray, SystemTrayEvent};
 use tracing::info;
 
 struct Server {
@@ -13,6 +12,7 @@ struct Server {
 impl Server {
   fn handle(&self, msg: String) -> String {
     info!("Received msg: {}", msg);
+
     // rs2js(format!("{Count: {}", self.counter));
     format!("{}", self.counter)
   }
@@ -22,10 +22,12 @@ struct State {
   server: Server,
 }
 
+fn emit_custard() {}
+
 #[tauri::command]
-async fn set_title(app_handle: tauri::AppHandle, title: String) {
+async fn set_title(_app_handle: tauri::AppHandle, _title: String) {
   #[cfg(target_os = "macos")]
-  if let Err(e) = app_handle.tray_handle().set_title(&title) {
+  if let Err(e) = _app_handle.tray_handle().set_title(&_title) {
     eprintln!("error updating timer: {}", e);
   }
 }
@@ -33,10 +35,26 @@ async fn set_title(app_handle: tauri::AppHandle, title: String) {
 /// Receive a message from the client and forwards it along to the server side. Messages are passed
 /// along serialized, leaving it to the server to fully process them.
 #[tauri::command]
-fn call_server(message: String, state: tauri::State<'_, State>) -> String {
+fn call_server(message: String, state: tauri::State<'_, State>, app: tauri::AppHandle) -> String {
   info!(?message, "Received tauri::command: call_server");
+  // Let's emit an event that should be caught by the frontend window
+  info!("About to emit custard");
+  app
+    .emit_all(
+      "Custard",
+      Payload {
+        message: "Tauri is awesome!".into(),
+      },
+    )
+    .unwrap();
 
   state.server.handle(message)
+}
+
+// the payload type must implement `Serialize` and `Clone`.
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+  message: String,
 }
 
 fn main() {
@@ -57,6 +75,7 @@ fn main() {
         window.open_devtools();
         window.close_devtools();
       }
+
       Ok(())
     })
     .system_tray(tray)

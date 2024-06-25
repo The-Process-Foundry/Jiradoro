@@ -3,7 +3,8 @@
     "beforeBuildCommand": "cd frontend && trunk build",
     "beforeDevCommand": "cd frontend && trunk serve",
     "devPath": "http://localhost:8030",
-    "distDir": "../dist"
+    "distDir": "../dist",
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "jira-pomodoro-app",

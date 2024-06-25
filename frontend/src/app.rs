@@ -1,6 +1,8 @@
 use gloo_timers::callback::Timeout;
+use js_sys::Function;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
+use tracing::info;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -22,13 +24,6 @@ struct SetTitleArgs<'a> {
   title: &'a str,
 }
 
-// Defines an async Rust function to call Tauri, used for updating the system tray state.
-#[wasm_bindgen]
-extern "C" {
-  #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"])]
-  async fn invoke(cmd: &str, args: JsValue) -> JsValue;
-}
-
 pub fn get_tray_title(timer_state: TimerState, timer_duration: u32, session_length: u32) -> String {
   match timer_state {
     TimerState::Paused => String::from("Paused"),
@@ -47,6 +42,43 @@ pub fn get_tray_title(timer_state: TimerState, timer_duration: u32, session_leng
       }
       return format!("Break: {}", format_time(session_length - timer_duration));
     }
+  }
+}
+
+#[function_component(CustardListener)]
+fn custard_listener() -> Html {
+  let oncustard = Callback::from(move |msg: crate::Response| {
+    info!("OnCustard received a message: {:#?}", msg);
+  });
+
+  use_effect(move || {
+    let on_custard = Closure::<dyn FnMut(JsValue)>::new(move |raw| {
+      info!("Received on_custard message: {:#?}", raw);
+      let msg: crate::Emission = serde_wasm_bindgen::from_value(raw).unwrap();
+      oncustard.emit(msg.payload);
+    });
+
+    let unlisten = crate::listen_("Custard", &on_custard);
+    let listener = (unlisten, on_custard);
+
+    || {
+      let promise = listener.0.clone();
+      spawn_local(async move {
+        info!("Spawned local listener for Custard");
+        let unlisten: Function = wasm_bindgen_futures::JsFuture::from(promise)
+          .await
+          .unwrap()
+          .into();
+        unlisten.call0(&JsValue::undefined()).unwrap();
+      });
+      drop(listener);
+    }
+  });
+
+  html! {
+    <div>
+      {"The listener goes here"}
+    </div>
   }
 }
 
@@ -78,7 +110,7 @@ pub fn app() -> Html {
         let title = get_tray_title(*timer_state, *timer_duration, *session_length);
 
         let args = to_value(&SetTitleArgs { title: &title[..] }).unwrap();
-        invoke("set_title", args).await;
+        crate::invoke("set_title", args).await;
       });
 
       move || {
@@ -89,6 +121,7 @@ pub fn app() -> Html {
 
   html! {
     <div class={classes!("h-screen", "flex", "flex-col")}>
+      <CustardListener />
       <div class={classes!("h-fit", "w-full")}>
         <Profile button_status={Status::NotReady} />
       </div>
