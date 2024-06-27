@@ -7,7 +7,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "jira-pomodoro-app",
+    "productName": "jiradoro",
     "version": "0.1.0"
   },
   "tauri": {

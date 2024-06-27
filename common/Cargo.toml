@@ -1,0 +1,11 @@
+[package]
+edition = "2021"
+name = "jiradoro-common"
+version = "0.1.0"
+
+[dependencies]
+# Unique identifiers
+uuid = {version = "1.9.1", features = ["v4", "serde"]}
+
+# Serialization tooling
+serde = {version = "1.0.203", features = ["derive"]}
