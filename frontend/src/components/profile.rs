@@ -4,6 +4,8 @@ use tracing::info;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+use jiradoro_common::prelude::*;
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub enum Status {
   NotReady,
@@ -24,8 +26,8 @@ pub fn Profile(_props: &Props) -> Html {
       info!("Received a click from the profile");
       spawn_local(async move {
         info!("Spawned Local");
-        let args = to_value(&crate::Request {
-          message: "Profile Click".to_string(),
+        let args = to_value(&Request {
+          message: RequestMessage::Heartbeat,
         })
         .unwrap();
         info!("About to 'call_server' with args: {:#?}", args);

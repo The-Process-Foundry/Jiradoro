@@ -7,6 +7,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+use jiradoro_common::prelude::*;
+
 use crate::{
   components::{profile::*, timer_controls::*, timer_display::TimerDisplay},
   helpers::*,
@@ -47,15 +49,15 @@ pub fn get_tray_title(timer_state: TimerState, timer_duration: u32, session_leng
 
 #[function_component(CustardListener)]
 fn custard_listener() -> Html {
-  let oncustard = Callback::from(move |msg: crate::Response| {
+  let oncustard = Callback::from(move |msg: Response| {
     info!("OnCustard received a message: {:#?}", msg);
   });
 
   use_effect(move || {
     let on_custard = Closure::<dyn FnMut(JsValue)>::new(move |raw| {
       info!("Received on_custard message: {:#?}", raw);
-      let msg: crate::Emission = serde_wasm_bindgen::from_value(raw).unwrap();
-      oncustard.emit(msg.payload);
+      let msg: EmissionEvent = serde_wasm_bindgen::from_value(raw).unwrap();
+      oncustard.emit(msg.payload.message);
     });
 
     let unlisten = crate::listen_("Custard", &on_custard);

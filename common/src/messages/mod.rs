@@ -27,3 +27,9 @@ pub struct Emission {
   pub guid: Uuid,
   pub message: Response,
 }
+
+/// A wrapper to use an emission as the payload for a web event
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
+pub struct EmissionEvent {
+  pub payload: Emission,
+}

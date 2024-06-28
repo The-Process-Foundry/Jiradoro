@@ -41,20 +41,20 @@ mod logger {
   }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Request {
-  message: String,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// pub struct Request {
+//   message: String,
+// }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Response {
-  message: String,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// pub struct Response {
+//   message: String,
+// }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Emission {
-  payload: Response,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// pub struct Emission {
+//   payload: Response,
+// }
 
 // Defines an async Rust function to call Tauri, used for updating the system tray state.
 #[wasm_bindgen]

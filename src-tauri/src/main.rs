@@ -4,6 +4,9 @@
 use tauri::Manager;
 use tauri::{SystemTray, SystemTrayEvent};
 use tracing::info;
+use uuid::Uuid;
+
+use jiradoro_common::prelude::*;
 
 struct Server {
   pub counter: i32,
@@ -22,8 +25,6 @@ struct State {
   server: Server,
 }
 
-fn emit_custard() {}
-
 #[tauri::command]
 async fn set_title(_app_handle: tauri::AppHandle, _title: String) {
   #[cfg(target_os = "macos")]
@@ -39,11 +40,13 @@ fn call_server(message: String, state: tauri::State<'_, State>, app: tauri::AppH
   info!(?message, "Received tauri::command: call_server");
   // Let's emit an event that should be caught by the frontend window
   info!("About to emit custard");
+  let guid = Uuid::new_v4();
   app
     .emit_all(
       "Custard",
-      Payload {
-        message: "Tauri is awesome!".into(),
+      Emission {
+        guid,
+        message: Response::Ack(guid),
       },
     )
     .unwrap();
@@ -54,7 +57,7 @@ fn call_server(message: String, state: tauri::State<'_, State>, app: tauri::AppH
 // the payload type must implement `Serialize` and `Clone`.
 #[derive(Clone, serde::Serialize)]
 struct Payload {
-  message: String,
+  message: Emission,
 }
 
 fn main() {
