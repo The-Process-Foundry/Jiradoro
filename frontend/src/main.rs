@@ -1,5 +1,4 @@
 use js_sys::Promise;
-use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 mod app;

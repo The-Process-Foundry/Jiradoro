@@ -31,7 +31,8 @@ pub fn Profile(_props: &Props) -> Html {
         })
         .unwrap();
         info!("About to 'call_server' with args: {:#?}", args);
-        crate::invoke("call_server", args).await;
+        let reply = crate::invoke("call_server", args).await;
+        info!("Received server reply {:#?}", reply);
       })
     })
   };
@@ -39,10 +40,10 @@ pub fn Profile(_props: &Props) -> Html {
   html! (
       <div class={classes!("text-right", "p-4", "cursor-pointer")}>
         <button
-            class={classes!("cursor-pointer", "border-2", "text-gray", "p-2")}
-            onclick={move |_| {start_login.emit(())}}
+          class={classes!("cursor-pointer", "border-2", "text-gray", "p-2")}
+          onclick={move |_| {start_login.emit(())}}
         >
-            {"profile button"}
+          {"profile button"}
         </button>
       </div>
   )

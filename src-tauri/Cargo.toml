@@ -27,6 +27,11 @@ tracing-subscriber = "0.3.18"
 
 uuid = {version = "1.9.1", features = ["v4", "serde"] }
 
+# Async code
+futures = {version = "0.3.30"}
+tokio = {version = "1.38.0", features = ["full"] }
+tokio-rustls = "0.26.0"
+
 # Internal libraries
 jiradoro-common = {path = "../common"}
 

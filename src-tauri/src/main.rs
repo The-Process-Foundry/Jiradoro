@@ -8,6 +8,9 @@ use uuid::Uuid;
 
 use jiradoro_common::prelude::*;
 
+mod longrunner;
+pub use longrunner::prelude::*;
+
 struct Server {
   pub counter: i32,
 }
@@ -17,7 +20,7 @@ impl Server {
     info!("Received msg: {}", msg);
 
     // rs2js(format!("{Count: {}", self.counter));
-    format!("{}", self.counter)
+    format!("Counter Value {}", self.counter)
   }
 }
 
@@ -39,11 +42,10 @@ async fn set_title(_app_handle: tauri::AppHandle, _title: String) {
 fn call_server(message: String, state: tauri::State<'_, State>, app: tauri::AppHandle) -> String {
   info!(?message, "Received tauri::command: call_server");
   // Let's emit an event that should be caught by the frontend window
-  info!("About to emit custard");
   let guid = Uuid::new_v4();
   app
     .emit_all(
-      "Custard",
+      "Emission",
       Emission {
         guid,
         message: Response::Ack(guid),
@@ -52,12 +54,6 @@ fn call_server(message: String, state: tauri::State<'_, State>, app: tauri::AppH
     .unwrap();
 
   state.server.handle(message)
-}
-
-// the payload type must implement `Serialize` and `Clone`.
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-  message: Emission,
 }
 
 fn main() {

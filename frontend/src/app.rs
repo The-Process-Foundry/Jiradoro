@@ -10,7 +10,7 @@ use yew::prelude::*;
 use jiradoro_common::prelude::*;
 
 use crate::{
-  components::{profile::*, timer_controls::*, timer_display::TimerDisplay},
+  components::{heartbeat::Heartbeat, profile::*, timer_controls::*, timer_display::TimerDisplay},
   helpers::*,
 };
 
@@ -47,26 +47,25 @@ pub fn get_tray_title(timer_state: TimerState, timer_duration: u32, session_leng
   }
 }
 
-#[function_component(CustardListener)]
+#[function_component(EmissionListener)]
 fn custard_listener() -> Html {
-  let oncustard = Callback::from(move |msg: Response| {
+  let on_emit = Callback::from(move |msg: Response| {
     info!("OnCustard received a message: {:#?}", msg);
   });
 
   use_effect(move || {
-    let on_custard = Closure::<dyn FnMut(JsValue)>::new(move |raw| {
+    let on_emission = Closure::<dyn FnMut(JsValue)>::new(move |raw| {
       info!("Received on_custard message: {:#?}", raw);
       let msg: EmissionEvent = serde_wasm_bindgen::from_value(raw).unwrap();
-      oncustard.emit(msg.payload.message);
+      on_emit.emit(msg.payload.message);
     });
 
-    let unlisten = crate::listen_("Custard", &on_custard);
-    let listener = (unlisten, on_custard);
+    let unlisten = crate::listen_("Emission", &on_emission);
+    let listener = (unlisten, on_emission);
 
     || {
       let promise = listener.0.clone();
       spawn_local(async move {
-        info!("Spawned local listener for Custard");
         let unlisten: Function = wasm_bindgen_futures::JsFuture::from(promise)
           .await
           .unwrap()
@@ -78,9 +77,7 @@ fn custard_listener() -> Html {
   });
 
   html! {
-    <div>
-      {"The listener goes here"}
-    </div>
+    <div />
   }
 }
 
@@ -123,7 +120,7 @@ pub fn app() -> Html {
 
   html! {
     <div class={classes!("h-screen", "flex", "flex-col")}>
-      <CustardListener />
+      <EmissionListener />
       <div class={classes!("h-fit", "w-full")}>
         <Profile button_status={Status::NotReady} />
       </div>
@@ -138,6 +135,9 @@ pub fn app() -> Html {
             timer_state={timer_state.clone()}
             timer_duration={timer_duration.clone()}
           />
+      </div>
+      <div class={classes!("h-16")}>
+        <Heartbeat />
       </div>
     </div>
   }

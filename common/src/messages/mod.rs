@@ -28,7 +28,8 @@ pub struct Emission {
   pub message: Response,
 }
 
-/// A wrapper to use an emission as the payload for a web event
+/// A wrapper to use an emission as the payload for a web event. The deserializer requires the
+/// keyword payload to work as it is automatically added when throwing the Emission event.
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct EmissionEvent {
   pub payload: Emission,
