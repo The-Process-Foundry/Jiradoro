@@ -1,14 +1,23 @@
-use std::rc::Rc;
+use gloo_timers::callback::{Interval, Timeout};
+use serde_wasm_bindgen::to_value;
+use std::{
+  rc::Rc,
+  sync::{Arc, Mutex},
+};
 use tracing::info;
 use uuid::Uuid;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
-use gloo_timers::callback::{Interval, Timeout};
+use crate::prelude::*;
+use jiradoro_common::prelude::*;
 
 pub enum Msg {
   IncrementTimer,
   HeartbeatClick,
   EndHeartbeat,
+  /// A message received from the longrunner process. This is usually going to be a beat of the heart.
+  Emission(String),
 }
 
 #[derive(Debug, PartialEq)]
@@ -48,10 +57,24 @@ impl Reducible for HeartbeatState {
   fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
     match action {
       Msg::HeartbeatClick => match self.status {
-        HeartbeatStatus::Off => HeartbeatState {
-          status: HeartbeatStatus::Started,
-          text: "Starting...",
-        },
+        // Call to the RPC layer to start
+        HeartbeatStatus::Off => {
+          spawn_local(async move {
+            let args = to_value(&Request {
+              message: RequestMessage::Heartbeat,
+            })
+            .unwrap();
+            info!("About to 'call_server::Heartbeat': {:#?}", args);
+            let reply = crate::invoke("call_server", args).await;
+
+            info!("Received server reply {:#?}", reply);
+          });
+
+          HeartbeatState {
+            status: HeartbeatStatus::Started,
+            text: "Starting...",
+          }
+        }
         HeartbeatStatus::Started => HeartbeatState {
           status: HeartbeatStatus::Running(Uuid::new_v4()),
           text: "Cancel",
@@ -66,13 +89,17 @@ impl Reducible for HeartbeatState {
         },
       }
       .into(),
-      _ => self.into(),
+      _ => {
+        info!("Got a different emission");
+        self.into()
+      }
     }
   }
 }
 
 #[derive(Debug, Default)]
 pub struct HeartbeatData {
+  pub guid: Uuid,
   pub time_elapsed: f32,
   pub count: i32,
   pub server_guid: Option<Uuid>,
@@ -87,11 +114,31 @@ pub fn Heartbeat() -> Html {
 
   let data = HeartbeatData::default();
 
+  // Makes a reference identifier for this component.
+  let guid = Uuid::new_v4();
+
+  // Setup the initial state and the dispatcher for this component
   let heartbeat_state: UseReducerHandle<HeartbeatState> = use_reducer_eq(HeartbeatState::default);
+
+  let long_runner = use_context::<LongRunnerCtx>().expect("LongRunner context not found");
+
+  // A callback to feed to the longrunner. This is kept simple, as the reducer itself should
+  // shoulder most of the burden for updating the component here.
+  let on_heartbeat: Callback<String> = {
+    let state = heartbeat_state.clone();
+
+    Callback::from(move |msg| {
+      info!("LongRunner is sending back a message to the reducer");
+      state.dispatch(Msg::Emission(msg))
+    })
+  };
+
+  let _ = long_runner.register(guid, on_heartbeat);
 
   let on_click: Callback<()> = {
     let state = heartbeat_state.clone();
     info!("Clicked button: {:?}", state.status);
+
     Callback::from(move |_| state.dispatch(Msg::HeartbeatClick))
   };
 

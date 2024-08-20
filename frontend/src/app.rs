@@ -5,8 +5,9 @@ use serde_wasm_bindgen::to_value;
 use tracing::info;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use yew::prelude::*;
+use yew::{function_component, html, prelude::*, ContextProvider, Html};
 
+use crate::prelude::*;
 use jiradoro_common::prelude::*;
 
 use crate::{
@@ -87,6 +88,8 @@ pub fn app() -> Html {
   let timer_duration = yew::prelude::use_state(|| 0);
   let timer_state = yew::prelude::use_state(|| TimerState::Paused);
 
+  let long_runner = LongRunnerCtx::new();
+
   use_effect_with(
     (
       timer_duration.clone(),
@@ -120,6 +123,7 @@ pub fn app() -> Html {
 
   html! {
     <div class={classes!("h-screen", "flex", "flex-col")}>
+      <ContextProvider<LongRunnerCtx> context={long_runner}>
       <EmissionListener />
       <div class={classes!("h-fit", "w-full")}>
         <Profile button_status={Status::NotReady} />
@@ -139,6 +143,7 @@ pub fn app() -> Html {
       <div class={classes!("h-16")}>
         <Heartbeat />
       </div>
+      </ContextProvider<LongRunnerCtx>>
     </div>
   }
 }

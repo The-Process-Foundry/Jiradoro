@@ -27,13 +27,14 @@ An app that saves Pomodoro work segments into a Jira account as time spent.
   - [ ] Heartbeat should emit a string every second saying it is alive
 
 - [ ] Make a heartbeat
-  - [ ] Client GUI display
-    - [ ] One line to display the latest count from the server heartbeat
-    - [ ] One line to display the last time the heartbeat was received
+  - [x] Client GUI display
+    - [x] One line to display the latest count from the server heartbeat
+    - [x] One line to display the last time the heartbeat was received
   - [ ] Make a timer for the time since the last message was received.
-    - [ ] Every second it should update the page.
+    - [ ] Every 1/10 second it should update the page.
     - [ ] To start, it should never reset
     - [ ] Should reset every time the counter is updated
+  - [ ] Add a button to reset the timer
   - [ ] Call to the LongRunner - command should be StartHeartbeat
     - [ ] Store the UUID returned in the app state
   - [ ] Add a listener for the Heartbeat emission

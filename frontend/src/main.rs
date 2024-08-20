@@ -4,6 +4,12 @@ use wasm_bindgen::prelude::*;
 mod app;
 pub mod components;
 
+pub mod longrunner;
+
+pub mod prelude {
+  pub use super::longrunner::LongRunnerCtx;
+}
+
 mod helpers {
   pub fn format_time(seconds: u32) -> String {
     let minutes = seconds / 60;
@@ -58,7 +64,7 @@ mod logger {
 // Defines an async Rust function to call Tauri, used for updating the system tray state.
 #[wasm_bindgen]
 extern "C" {
-  #[wasm_bindgen(js_namespace = ["window.__TAURI__.tauri"])]
+  #[wasm_bindgen(js_namespace = ["window.__TAURI__.core"])]
   async fn invoke(cmd: &str, args: JsValue) -> JsValue;
   #[wasm_bindgen(js_namespace = ["window.__TAURI__.event"], js_name = "listen")]
   fn listen_(event: &str, handler: &Closure<dyn FnMut(JsValue)>) -> Promise;
