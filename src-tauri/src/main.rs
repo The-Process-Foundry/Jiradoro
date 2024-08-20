@@ -73,7 +73,7 @@ fn main() {
       let menu = MenuBuilder::new(app).items(&[&toggle]).build()?;
       let _tray = TrayIconBuilder::new()
         .menu(&menu)
-        .on_menu_event(move |app, event| match event.id().as_ref() {
+        .on_menu_event(move |_app, event| match event.id().as_ref() {
           "toggle" => {
             println!("toggle clicked");
           }
